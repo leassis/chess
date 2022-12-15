@@ -9,8 +9,8 @@ import org.junit.jupiter.params.provider.ArgumentsProvider;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import static com.lassis.sensysgatso.chess.ChessGame.SIZE;
-import static com.lassis.sensysgatso.chess.ChessGameTest.at;
+import static com.lassis.sensysgatso.chess.game.ChessGame.SIZE_8;
+import static com.lassis.sensysgatso.chess.game.ChessGameTest.at;
 import static com.lassis.sensysgatso.chess.model.pieces.PieceTest.MAX;
 
 public class PawnArgumentProvider implements ArgumentsProvider {
@@ -46,11 +46,8 @@ public class PawnArgumentProvider implements ArgumentsProvider {
     }
 
     private Pawn pawn(Color color, int row, int column) {
-        Board board = new Board(SIZE, SIZE);
+        Board board = new Board(SIZE_8, SIZE_8);
 
-        Pawn pawn = new Pawn(color, board);
-        board.place(pawn, at(row, column));
-
-        return pawn;
+        return new Pawn(color, board, at(row, column));
     }
 }

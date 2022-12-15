@@ -1,6 +1,6 @@
 package com.lassis.sensysgatso.chess.model.pieces;
 
-import com.lassis.sensysgatso.chess.ChessGame;
+import com.lassis.sensysgatso.chess.game.ChessGame;
 import com.lassis.sensysgatso.chess.model.Board;
 import com.lassis.sensysgatso.chess.model.Color;
 import org.junit.jupiter.api.extension.ExtensionContext;
@@ -10,7 +10,7 @@ import org.junit.jupiter.params.provider.ArgumentsProvider;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import static com.lassis.sensysgatso.chess.ChessGameTest.at;
+import static com.lassis.sensysgatso.chess.game.ChessGameTest.at;
 import static com.lassis.sensysgatso.chess.model.pieces.PieceTest.MAX;
 
 public class KnightArgumentProvider implements ArgumentsProvider {
@@ -58,11 +58,7 @@ public class KnightArgumentProvider implements ArgumentsProvider {
     }
 
     private Knight knight(int row, int column) {
-        Board board = new Board(ChessGame.SIZE, ChessGame.SIZE);
-
-        Knight knight = new Knight(Color.BLACK, board);
-        board.place(knight, at(row, column));
-
-        return knight;
+        Board board = new Board(ChessGame.SIZE_8, ChessGame.SIZE_8);
+        return new Knight(Color.BLACK, board, at(row, column));
     }
 }

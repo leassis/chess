@@ -2,38 +2,32 @@ package com.lassis.sensysgatso.chess.model.pieces;
 
 import com.lassis.sensysgatso.chess.model.Board;
 import com.lassis.sensysgatso.chess.model.Color;
-import com.lassis.sensysgatso.chess.model.Piece;
-import com.lassis.sensysgatso.chess.model.Position;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
+import com.lassis.sensysgatso.chess.model.Point;
 import lombok.ToString;
 
 import java.util.HashSet;
 import java.util.Set;
 
-@RequiredArgsConstructor
-@Setter
+/**
+ * Queen chess piece. Executes movements straight or diagonal. Further info on <a href="https://en.wikipedia.org/wiki/Chess">...</a>
+ */
 @ToString
-public class Queen implements Piece {
-
-    private final Color color;
-    private final Board board;
-
-    @Getter
-    private Position position;
-
-    @Override
-    public Color getColor() {
-        return color;
+public class Queen extends AbstractChessPiece {
+    public Queen(Color color, Board board, Point point) {
+        super(color, board, point);
     }
 
+    /**
+     * provides a set of possible moves
+     *
+     * @return set of possible moves. Take in consideration all elements in the board
+     */
     @Override
-    public Set<Position> allowedMoves() {
-        Set<Position> positions = new HashSet<>();
-        positions.addAll(CommonMovements.diagonal(this, board));
-        positions.addAll(CommonMovements.straight(this, board));
-        return positions;
+    public Set<Point> allowedMoves() {
+        Set<Point> points = new HashSet<>();
+        points.addAll(CommonMovements.diagonal(this, getPoint(), getBoard()));
+        points.addAll(CommonMovements.straight(this, getPoint(), getBoard()));
+        return points;
     }
 
 }

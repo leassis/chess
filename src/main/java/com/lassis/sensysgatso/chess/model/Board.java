@@ -1,16 +1,16 @@
 package com.lassis.sensysgatso.chess.model;
 
-import java.util.Arrays;
-import java.util.List;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Collectors;
+import java.util.Set;
 
 public class Board {
-    public static final Position MIN_POSITION = new Position(0, 0);
+    public static final Point MIN_POINT = new Point(0, 0);
 
-    private final Position maxPosition;
+    private final Point maxPoint;
     private final int rows;
     private final int columns;
     private final Piece[][] pieces;
@@ -19,32 +19,31 @@ public class Board {
         this.pieces = new Piece[rows][columns];
         this.rows = rows;
         this.columns = columns;
-        this.maxPosition = new Position(rows - 1, columns - 1);
+        this.maxPoint = new Point(rows - 1, columns - 1);
     }
 
-    public Map<Color, List<Piece>> pieces() {
-        return Arrays.stream(pieces)
-                .flatMap(Arrays::stream)
-                .filter(Objects::nonNull)
-                .collect(Collectors.groupingBy(Piece::getColor));
-    }
-
-    public List<Piece> pieces(Color color) {
-        return Arrays.stream(pieces)
-                .flatMap(Arrays::stream)
-                .filter(Objects::nonNull)
-                .filter(p -> Objects.equals(p.getColor(), color))
-                .toList();
+    public Map<Color, Set<Square>> nonEmptySquares() {
+        Map<Color, Set<Square>> result = new HashMap<>();
+        for (int row = 0; row < pieces.length; row++) {
+            for (int column = 0; column < pieces[row].length; column++) {
+                Piece piece = pieces[row][column];
+                if (Objects.nonNull(piece)) {
+                    result.computeIfAbsent(piece.getColor(), k -> new HashSet<>())
+                            .add(new Square(piece, new Point(row, column)));
+                }
+            }
+        }
+        return result;
     }
 
     /**
      * get a piece from a certain spot
      *
-     * @param position coordinate to check
+     * @param point coordinate to check
      * @return an Optional piece if found, empty otherwise
      */
-    public Optional<Piece> at(Position position) {
-        return at(position.row(), position.column());
+    public Optional<Piece> at(Point point) {
+        return at(point.row(), point.column());
     }
 
     public Optional<Piece> at(int row, int column) {
@@ -55,23 +54,31 @@ public class Board {
         return Optional.ofNullable(pieces[row][column]);
     }
 
-    public Optional<Piece> place(Piece piece, Position position) {
-        Optional<Piece> deleted = remove(position);
+    public void place(Piece piece, Point point) {
+        if (!isInBounds(point)) {
+            throw new IllegalStateException("invalid position");
+        }
 
-        piece.setPosition(position);
-        pieces[position.row()][position.column()] = piece;
+        if (Objects.nonNull(pieces[point.row()][point.column()])) {
+            throw new IllegalStateException("position is not empty");
+        }
+
+        piece.at(point);
+
+        pieces[point.row()][point.column()] = piece;
+    }
+
+    public Optional<Piece> remove(Point point) {
+        Optional<Piece> deleted = at(point);
+        pieces[point.row()][point.column()] = null;
+
+        deleted.ifPresent(p -> p.at(null));
+
         return deleted;
     }
 
-    public Optional<Piece> remove(Position position) {
-        Optional<Piece> deleted = at(position);
-        pieces[position.row()][position.column()] = null;
-        deleted.ifPresent(p -> p.setPosition(null));
-        return deleted;
-    }
-
-    public boolean isInBounds(Position position) {
-        return isInBounds(position.row(), position.column());
+    public boolean isInBounds(Point point) {
+        return isInBounds(point.row(), point.column());
     }
 
     public boolean isInBounds(int row, int column) {
@@ -79,12 +86,12 @@ public class Board {
                 && column >= min().column() && column <= max().column();
     }
 
-    public Position min() {
-        return MIN_POSITION;
+    public Point min() {
+        return MIN_POINT;
     }
 
-    public Position max() {
-        return maxPosition;
+    public Point max() {
+        return maxPoint;
     }
 
     public int rows() {

@@ -4,10 +4,7 @@ import com.lassis.sensysgatso.chess.model.Board;
 import com.lassis.sensysgatso.chess.model.Color;
 import com.lassis.sensysgatso.chess.model.Piece;
 import com.lassis.sensysgatso.chess.model.Placement;
-import com.lassis.sensysgatso.chess.model.Position;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
+import com.lassis.sensysgatso.chess.model.Point;
 import lombok.ToString;
 
 import java.util.HashSet;
@@ -15,58 +12,55 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
-@RequiredArgsConstructor
-@Setter
+/**
+ * Pawn chess piece. Further info on <a href="https://en.wikipedia.org/wiki/Chess">...</a>
+ */
 @ToString
-public class Pawn implements Piece {
-    private final Color color;
-    private final Board board;
+public class Pawn extends AbstractChessPiece {
 
-    @Getter
-    private Position position;
-
-
-    @Override
-    public Color getColor() {
-        return color;
+    public Pawn(Color color, Board board, Point point) {
+        super(color, board, point);
     }
 
     /**
-     * provides all moves for the king. The king moves only in surrounding squares, it creates a square figure around
-     * himself
+     * provides a set of possible moves
      *
-     * @return
+     * @return set of possible moves. Take in consideration all elements in the board
      */
     @Override
-    public Set<Position> allowedMoves() {
+    public Set<Point> allowedMoves() {
+        final Color color = getColor();
+        final Point point = getPoint();
+        final Board board = getBoard();
+
         final short sum = (short) (color.placement() == Placement.NORTH ? 1 : -1);
-        final int column = position.column();
+        final int column = point.column();
 
-        int row = position.row() + sum;
+        int row = point.row() + sum;
 
-        Set<Position> result = new HashSet<>();
+        Set<Point> result = new HashSet<>();
         // diagonal left
         Optional<Piece> diagonalLeft = board.at(row, column - 1)
-                .filter(piece -> !Objects.equals(piece.getColor(), getColor()));
+                .filter(piece -> !Objects.equals(piece.getColor(), color));
         if (diagonalLeft.isPresent()) {
-            result.add(new Position(row, column - 1));
+            result.add(new Point(row, column - 1));
         }
 
         // diagonal right
         Optional<Piece> diagonalRight = board.at(row, column + 1)
-                .filter(piece -> !Objects.equals(piece.getColor(), getColor()));
+                .filter(piece -> !Objects.equals(piece.getColor(), color));
         if (diagonalRight.isPresent()) {
-            result.add(new Position(row, column + 1));
+            result.add(new Point(row, column + 1));
         }
 
         //step one
         if (isAllowed(row, column)) {
-            result.add(new Position(row, column));
+            result.add(new Point(row, column));
 
             //step two
             row += sum;
             if (isAllowed(row, column)) {
-                result.add(new Position(row, column));
+                result.add(new Point(row, column));
             }
         }
 
@@ -74,7 +68,7 @@ public class Pawn implements Piece {
     }
 
     private boolean isAllowed(int row, int column) {
-        return board.isInBounds(row, column)
-                && board.at(row, column).isEmpty();
+        return getBoard().isInBounds(row, column)
+                && getBoard().at(row, column).isEmpty();
     }
 }

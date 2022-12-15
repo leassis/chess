@@ -2,51 +2,48 @@ package com.lassis.sensysgatso.chess.model.pieces;
 
 import com.lassis.sensysgatso.chess.model.Board;
 import com.lassis.sensysgatso.chess.model.Color;
-import com.lassis.sensysgatso.chess.model.Piece;
-import com.lassis.sensysgatso.chess.model.Position;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
+import com.lassis.sensysgatso.chess.model.Point;
 import lombok.ToString;
 
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
-@Setter
-@RequiredArgsConstructor
+/**
+ * King chess piece executes movements around himself.
+ * Further info on <a href="https://en.wikipedia.org/wiki/Chess">...</a>
+ */
 @ToString
-public class King implements Piece {
+public class King extends AbstractChessPiece {
     private static final int SQUARE_SIZE = 3;
 
-    private final Color color;
-    private final Board board;
-
-    @Getter
-    private Position position;
+    public King(Color color, Board board, Point point) {
+        super(color, board, point);
+    }
 
     @Override
-    public Color getColor() {
-        return color;
+    public Point getPoint() {
+        return super.getPoint();
     }
 
     /**
-     * provides all moves for the king. The king moves only in surrounding squares, it creates a square figure around
-     * himself
+     * provides a set of possible moves
      *
-     * @return
+     * @return set of possible moves. Take in consideration all elements in the board
      */
     @Override
-    public Set<Position> allowedMoves() {
-        final int startRow = position.row() - 1;
-        final int startColumn = position.column() - 1;
+    public Set<Point> allowedMoves() {
+        final Point point = getPoint();
+        final Board board = getBoard();
+        final int startRow = point.row() - 1;
+        final int startColumn = point.column() - 1;
 
-        final Set<Position> possible = new HashSet<>();
+        final Set<Point> possible = new HashSet<>();
         for (int row = startRow; row < startRow + SQUARE_SIZE; row++) {
             for (int column = startColumn; column < startColumn + SQUARE_SIZE; column++) {
                 boolean isSameColor = board.at(row, column).filter(p -> Objects.equals(getColor(), p.getColor())).isPresent();
-                if ((row != position.row() || column != position.column()) && board.isInBounds(row, column) && !isSameColor) {
-                    possible.add(new Position(row, column));
+                if ((row != point.row() || column != point.column()) && board.isInBounds(row, column) && !isSameColor) {
+                    possible.add(new Point(row, column));
                 }
             }
         }

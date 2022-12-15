@@ -1,9 +1,9 @@
 package com.lassis.sensysgatso.chess.model.pieces;
 
-import com.lassis.sensysgatso.chess.ChessGame;
+import com.lassis.sensysgatso.chess.game.ChessGame;
 import com.lassis.sensysgatso.chess.model.Board;
 import com.lassis.sensysgatso.chess.model.Color;
-import com.lassis.sensysgatso.chess.model.Position;
+import com.lassis.sensysgatso.chess.model.Point;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.ArgumentsProvider;
@@ -13,7 +13,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import static com.lassis.sensysgatso.chess.ChessGameTest.at;
+import static com.lassis.sensysgatso.chess.game.ChessGameTest.at;
 import static com.lassis.sensysgatso.chess.model.pieces.PieceTest.MAX;
 
 public class RookArgumentProvider implements ArgumentsProvider {
@@ -35,22 +35,18 @@ public class RookArgumentProvider implements ArgumentsProvider {
     }
 
     private Arguments arguments(int r, int c, String description) {
-        Position position = new Position(r, c);
-        Set<Position> result = new HashSet<>(Arrays.asList(
+        Point point = new Point(r, c);
+        Set<Point> result = new HashSet<>(Arrays.asList(
                 at(r, 0), at(r, 1), at(r, 2), at(r, 3), at(r, 4), at(r, 5), at(r, 6), at(r, 7),
                 at(0, c), at(1, c), at(2, c), at(3, c), at(4, c), at(5, c), at(6, c), at(7, c))
         );
-        result.remove(position);
+        result.remove(point);
 
-        return Arguments.of(rook(position), result, description);
+        return Arguments.of(rook(point), result, description);
     }
 
-    private Rook rook(Position position) {
-        Board board = new Board(ChessGame.SIZE, ChessGame.SIZE);
-
-        Rook rook = new Rook(Color.BLACK, board);
-        board.place(rook, position);
-
-        return rook;
+    private Rook rook(Point point) {
+        Board board = new Board(ChessGame.SIZE_8, ChessGame.SIZE_8);
+        return new Rook(Color.BLACK, board, point);
     }
 }

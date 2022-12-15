@@ -2,7 +2,7 @@ package com.lassis.sensysgatso.chess.model.pieces;
 
 import com.lassis.sensysgatso.chess.model.Board;
 import com.lassis.sensysgatso.chess.model.Color;
-import com.lassis.sensysgatso.chess.model.Position;
+import com.lassis.sensysgatso.chess.model.Point;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.ArgumentsProvider;
@@ -12,8 +12,8 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import static com.lassis.sensysgatso.chess.ChessGame.SIZE;
-import static com.lassis.sensysgatso.chess.ChessGameTest.at;
+import static com.lassis.sensysgatso.chess.game.ChessGame.SIZE_8;
+import static com.lassis.sensysgatso.chess.game.ChessGameTest.at;
 import static com.lassis.sensysgatso.chess.model.pieces.PieceTest.MAX;
 
 public class QueenArgumentProvider implements ArgumentsProvider {
@@ -60,25 +60,22 @@ public class QueenArgumentProvider implements ArgumentsProvider {
         );
     }
 
-    private HashSet<Position> straight(Position position, Set<Position> expected) {
-        int r = position.row();
-        int c = position.column();
+    private HashSet<Point> straight(Point point, Set<Point> expected) {
+        int r = point.row();
+        int c = point.column();
 
-        HashSet<Position> result = new HashSet<>(expected);
+        HashSet<Point> result = new HashSet<>(expected);
         result.addAll(Arrays.asList(
                 at(r, 0), at(r, 1), at(r, 2), at(r, 3), at(r, 4), at(r, 5), at(r, 6), at(r, 7),
                 at(0, c), at(1, c), at(2, c), at(3, c), at(4, c), at(5, c), at(6, c), at(7, c))
         );
-        result.remove(position);
+        result.remove(point);
         return result;
     }
 
     private Queen queen(int row, int column) {
-        Board board = new Board(SIZE, SIZE);
+        Board board = new Board(SIZE_8, SIZE_8);
 
-        Queen queen = new Queen(Color.BLACK, board);
-        board.place(queen, at(row, column));
-
-        return queen;
+        return new Queen(Color.BLACK, board, at(row, column));
     }
 }

@@ -2,33 +2,29 @@ package com.lassis.sensysgatso.chess.model.pieces;
 
 import com.lassis.sensysgatso.chess.model.Board;
 import com.lassis.sensysgatso.chess.model.Color;
-import com.lassis.sensysgatso.chess.model.Piece;
-import com.lassis.sensysgatso.chess.model.Position;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
+import com.lassis.sensysgatso.chess.model.Point;
 import lombok.ToString;
 
 import java.util.Set;
 
-@RequiredArgsConstructor
-@Setter
+/**
+ * Chess Rook piece, executes movements on straight line as long as no one in the way
+ * Further info on <a href="https://en.wikipedia.org/wiki/Chess">...</a>
+ */
 @ToString
-public class Rook implements Piece {
+public class Rook extends AbstractChessPiece {
 
-    private final Color color;
-    private final Board board;
-
-    @Getter
-    private Position position;
-
-    @Override
-    public Color getColor() {
-        return color;
+    public Rook(Color color, Board board, Point point) {
+        super(color, board, point);
     }
 
+    /**
+     * provides a set of possible moves
+     *
+     * @return set of possible moves. Take in consideration all elements in the board
+     */
     @Override
-    public Set<Position> allowedMoves() {
-        return CommonMovements.straight(this, board);
+    public Set<Point> allowedMoves() {
+        return CommonMovements.straight(this, getPoint(), getBoard());
     }
 }

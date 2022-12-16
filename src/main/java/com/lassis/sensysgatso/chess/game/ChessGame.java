@@ -59,7 +59,8 @@ public class ChessGame {
 
     ChessGame(Board board, boolean placePieces) {
         this.board = board;
-        // king is always places
+
+        // king is always at the same places
         this.colorKings = Collections.unmodifiableMap(placePieceFirstRow((cl, pos) -> new King(cl, board, pos), board.min().column() + 4));
         if (placePieces) {
             placePieces();
@@ -144,7 +145,11 @@ public class ChessGame {
     public Set<Point> allowedMoves(Point point) {
         lock.lock();
         try {
-            return board.at(point)
+            Optional<Piece> at = board.at(point);
+
+            at.ifPresent(p -> log.debug("calculating allowed moves to {}", p));
+
+            return at
                     .filter(piece -> piece.getColor() == currentTurn)
                     .map(Piece::allowedMoves)
                     .orElse(Collections.emptySet());
@@ -186,6 +191,7 @@ public class ChessGame {
         lock.lock();
         try {
             if (isGameOver()) {
+                log.warn("the game is already finished");
                 throw new GameOverException();
             }
 
@@ -194,6 +200,7 @@ public class ChessGame {
                 log.warn("there is no piece at origin position {}", origin);
                 throw new EmptySquareException();
             }
+            oPiece.ifPresent(p -> log.debug("moving {} from {} -> {}", p, origin, destination));
 
             boolean wrongPlayer = oPiece.map(Piece::getColor).filter(c -> Objects.equals(c, currentTurn)).isEmpty();
             if (wrongPlayer) {
@@ -269,7 +276,7 @@ public class ChessGame {
             for (int row = board.min().row(); row <= board.max().row(); row++) {
                 List<String> line = new ArrayList<>();
                 for (int col = board.min().column(); col <= board.max().column(); col++) {
-                    line.add(fixSize(board.at(row, col).map(v -> v.getColor().toString().charAt(0) + ":" + v.getClass().getSimpleName()).orElse("")));
+                    line.add(fixSize(board.at(row, col).map(v -> v.getColor().toString().charAt(0) + ":" + v.name()).orElse("")));
                 }
                 sb.append(line.stream().collect(Collectors.joining("|", "|", "|")));
                 sb.append("\n");

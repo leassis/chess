@@ -26,4 +26,6 @@ public interface Piece {
      * @param point where the piece is sit
      */
     void at(Point point);
+
+    String name();
 }

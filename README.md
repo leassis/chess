@@ -1,7 +1,8 @@
 # Simple Chess Server
 
 This project is the take home assignment to sensys gatso. 
-It is a simple server to play chess. All the pieces has its moves according to the chess rules, see more at https://en.wikipedia.org/wiki/Chess
+It is a simple server to play chess. All the pieces has its moves according to the chess rules, see more at https://en.wikipedia.org/wiki/Chess.
+
 Only CHECK and CHECKMATE are implemented, other rules are not done yet. E.g. when a Pawn reach out the end of board it may be changed to another piece chosen by the player.
 
 
@@ -40,14 +41,14 @@ Return all available pieces
 ```
 [
     {
-        "id": "A1",
+        "squareId": "A1",
         "row": 7,
         "column": 0,
         "color": "WHITE",
         "type": "ROOK"
     },
     {
-        "id": "B1",
+        "squareId": "B1",
         "row": 7,
         "column": 1,
         "color": "WHITE",
@@ -61,23 +62,23 @@ Retrieve piece detail
 
 #### Response
 - 200: Return JSON object with piece details. Check out the allowedMoves property, it provides where this piece is allowed to go according to its rules
-- 400: if the ID is in wrong format. ID always has 2 chars. E.g. D2
+- 400: if the square ID is in wrong format. ID always has 2 chars. E.g. D2
 - 404: when square is empty or out of bounds
 ```
 {
-    "id": "D2",
+    "squareId": "D2",
     "row": 6,
     "column": 3,
     "color": "WHITE",
     "type": "PAWN",
     "allowedMoves": [
         {
-            "id": "D4",
+            "squareId": "D4",
             "row": 4,
             "column": 3
         },
         {
-            "id": "D3",
+            "squareId": "D3",
             "row": 5,
             "column": 3
         }
@@ -89,7 +90,7 @@ Retrieve piece detail
 Executes a move
 
 #### Request
-The properties `from` and `to` receive the point ID
+The properties `from` and `to` receive the square ID
 
 ```
 {"from": "A2", "to": "A3"}
@@ -97,12 +98,12 @@ The properties `from` and `to` receive the point ID
 
 #### Response
 - 200: move done, return JSON object with piece.
-- 400: if the ID is in wrong format or player tries to execute a invalid move
+- 400: if the square ID is in wrong format or player tries to execute invalid move
 - 404: when square is empty or out of bounds
 - 409: when a player tries to change his opponent piece
 ```
 {
-    "id": "A3",
+    "squareId": "A3",
     "row": 5,
     "column": 0,
     "color": "WHITE",
@@ -121,9 +122,9 @@ docker run -p 8080:8080 {image-id}
 ```
 
 ## Frontend implementation suggestion
-- GET /api/pieces and mount the board using the row,column,type and color make sure you keep track square ID. IDs are just pointer to the squares as a regular board
+- GET /api/pieces and mount the board using the row,column,type and color make sure you keep track square ID. square IDs are just pointer to the squares as a regular board
 - GET /api/status and get the `turn` to allow player to play
-- allow the player click on his piece, get the ID and GET /api/pieces/{ID}. This will give you all the moves allowed and the squares could be highlighted. Keep track of the clicked ID
+- allow the player click on his piece, get the square ID and GET /api/pieces/{ID}. This will give you all the moves allowed and the squares could be highlighted. Keep track of the clicked square ID
 - when user releases the piece get the square ID and POST /api/moves providing `from` and `to`
 - GET /api/status and get the `turn` to allow player to play and the game status
 - repeat the last 3 steps until game reaches checkmate

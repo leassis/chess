@@ -7,6 +7,8 @@ import com.lassis.sensysgatso.chess.model.Point;
 import lombok.AccessLevel;
 import lombok.Getter;
 
+import java.util.Locale;
+
 @Getter(AccessLevel.PACKAGE)
 abstract class AbstractChessPiece implements Piece {
     private final Color color;
@@ -28,5 +30,10 @@ abstract class AbstractChessPiece implements Piece {
     @Override
     public Color getColor() {
         return color;
+    }
+
+    @Override
+    public String name() {
+        return this.getClass().getSimpleName().toUpperCase(Locale.ROOT);
     }
 }

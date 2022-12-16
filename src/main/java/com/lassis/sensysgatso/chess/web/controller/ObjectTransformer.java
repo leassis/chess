@@ -47,7 +47,7 @@ public class ObjectTransformer {
         return PieceInfo.builder()
                 .color(piece.getColor())
                 .pointInfo(toPointInfo(point))
-                .type(getPieceName(piece))
+                .type(piece.name())
                 .build();
     }
 
@@ -77,7 +77,7 @@ public class ObjectTransformer {
 
     public StatusInfo toStatusInfo(ChessGameStatus status) {
         return status.deleted().stream()
-                .map(v -> new StatusPieceInfo(v.getColor(), getPieceName(v)))
+                .map(v -> new StatusPieceInfo(v.getColor(), v.name()))
                 .collect(collectingAndThen(Collectors.toSet(), coll -> toStatusInfo(status, coll)));
     }
 
@@ -90,7 +90,4 @@ public class ObjectTransformer {
     }
 
 
-    private static String getPieceName(Piece piece) {
-        return piece.getClass().getSimpleName().toUpperCase(Locale.ENGLISH);
-    }
 }

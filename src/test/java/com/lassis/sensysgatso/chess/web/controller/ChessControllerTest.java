@@ -59,14 +59,14 @@ class ChessControllerTest {
         MockHttpServletRequestBuilder get = MockMvcRequestBuilders.get("/api/pieces").accept(MediaType.APPLICATION_JSON_VALUE);
         mockMvc.perform(get)
                 .andExpect(jsonPath("$", hasSize(32)))
-                .andExpect(jsonPath("$[0].id", is("A1")))
+                .andExpect(jsonPath("$[0].squareId", is("A1")))
                 .andExpect(jsonPath("$[0].row", is(7)))
                 .andExpect(jsonPath("$[0].column", is(0)))
                 .andExpect(jsonPath("$[0].type", is("ROOK")))
                 .andExpect(jsonPath("$[0].color", is(Color.WHITE.toString())))
-                .andExpect(jsonPath("$[1].id", is("B1")))
-                .andExpect(jsonPath("$[2].id", is("C1")))
-                .andExpect(jsonPath("$[8].id", is("A2")))
+                .andExpect(jsonPath("$[1].squareId", is("B1")))
+                .andExpect(jsonPath("$[2].squareId", is("C1")))
+                .andExpect(jsonPath("$[8].squareId", is("A2")))
                 .andExpect(jsonPath("$[8].color", is(Color.WHITE.toString())))
                 .andExpect(jsonPath("$[15].color", is(Color.WHITE.toString())))
                 .andExpect(jsonPath("$[16].color", is(Color.BLACK.toString())))
@@ -77,16 +77,16 @@ class ChessControllerTest {
     void should_retrieve_piece_and_check_movement_to_pawn() throws Exception {
         MockHttpServletRequestBuilder get = MockMvcRequestBuilders.get("/api/pieces/A2").accept(MediaType.APPLICATION_JSON_VALUE);
         mockMvc.perform(get)
-                .andExpect(jsonPath("$.id", is("A2")))
+                .andExpect(jsonPath("$.squareId", is("A2")))
                 .andExpect(jsonPath("$.row", is(6)))
                 .andExpect(jsonPath("$.column", is(0)))
                 .andExpect(jsonPath("$.color", is(Color.WHITE.toString())))
                 .andExpect(jsonPath("$.type", is("PAWN")))
                 .andExpect(jsonPath("$.allowedMoves", hasSize(2)))
-                .andExpect(jsonPath("$.allowedMoves[0].id", is("A3")))
+                .andExpect(jsonPath("$.allowedMoves[0].squareId", is("A3")))
                 .andExpect(jsonPath("$.allowedMoves[0].row", is(5)))
                 .andExpect(jsonPath("$.allowedMoves[0].column", is(0)))
-                .andExpect(jsonPath("$.allowedMoves[1].id", is("A4")))
+                .andExpect(jsonPath("$.allowedMoves[1].squareId", is("A4")))
                 .andExpect(jsonPath("$.allowedMoves[1].row", is(4)))
                 .andExpect(jsonPath("$.allowedMoves[1].column", is(0)))
                 .andExpect(status().isOk());
@@ -116,7 +116,7 @@ class ChessControllerTest {
                 .content(objectMapper.writeValueAsBytes(moveInfo));
 
         mockMvc.perform(post)
-                .andExpect(jsonPath("$.id", is("A4")))
+                .andExpect(jsonPath("$.squareId", is("A4")))
                 .andExpect(jsonPath("$.row", is(4)))
                 .andExpect(jsonPath("$.column", is(0)))
                 .andExpect(jsonPath("$.color", is(Color.WHITE.toString())))
@@ -182,7 +182,7 @@ class ChessControllerTest {
                     .content(objectMapper.writeValueAsBytes(moveInfo));
 
             mockMvc.perform(post)
-                    .andExpect(jsonPath("$.id", is(moveInfo.getTo())))
+                    .andExpect(jsonPath("$.squareId", is(moveInfo.getTo())))
                     .andExpect(status().isOk());
         }
 

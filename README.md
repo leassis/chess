@@ -119,3 +119,13 @@ A Dockerfile is provided in the root of the project. You can build a docker imag
 ```
 docker run -p 8080:8080 {image-id}
 ```
+
+## Frontend implementation suggestion
+- GET /api/pieces and mount the board using the row,column,type and color make sure you keep track square ID. IDs are just pointer to the squares as a regular board
+- GET /api/status and get the `turn` to allow player to play
+- allow the player click on his piece, get the ID and GET /api/pieces/{ID}. This will give you all the moves allowed and the squares could be highlighted. Keep track of the clicked ID
+- when user releases the piece get the square ID and POST /api/moves providing `from` and `to`
+- GET /api/status and get the `turn` to allow player to play and the game status
+- repeat the last 3 steps until game reaches checkmate
+- after game is finished DELETE /api/game and start all over again
+

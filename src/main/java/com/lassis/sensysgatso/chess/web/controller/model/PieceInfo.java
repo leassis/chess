@@ -1,5 +1,6 @@
 package com.lassis.sensysgatso.chess.web.controller.model;
 
+import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import com.lassis.sensysgatso.chess.model.Color;
 import lombok.Builder;
 import lombok.Value;
@@ -7,9 +8,8 @@ import lombok.Value;
 @Value
 @Builder
 public class PieceInfo {
-    private final String id;
-    private final int row;
-    private final int column;
+    @JsonUnwrapped
+    private final PointInfo pointInfo;
     private final Color color;
     private final String type;
 }

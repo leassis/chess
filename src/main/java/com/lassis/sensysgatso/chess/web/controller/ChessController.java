@@ -3,8 +3,8 @@ package com.lassis.sensysgatso.chess.web.controller;
 import com.lassis.sensysgatso.chess.game.ChessGame;
 import com.lassis.sensysgatso.chess.model.ChessGameStatus;
 import com.lassis.sensysgatso.chess.model.Point;
-import com.lassis.sensysgatso.chess.web.controller.model.MovementInfo;
-import com.lassis.sensysgatso.chess.web.controller.model.PieceDetail;
+import com.lassis.sensysgatso.chess.web.controller.model.MoveInfo;
+import com.lassis.sensysgatso.chess.web.controller.model.PieceDetailInfo;
 import com.lassis.sensysgatso.chess.web.controller.model.PieceInfo;
 import com.lassis.sensysgatso.chess.web.controller.model.StatusInfo;
 import jakarta.validation.Valid;
@@ -18,9 +18,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+
+import static com.lassis.sensysgatso.chess.web.controller.ObjectTransformer.POINTINFO_COMPARATOR;
 
 @Controller
 @RequiredArgsConstructor
@@ -30,7 +31,7 @@ class ChessController {
 
     private ChessGame chessGame = new ChessGame();
 
-    @DeleteMapping("/reset")
+    @DeleteMapping("/game")
     ResponseEntity<Void> reset() {
         chessGame = new ChessGame();
         return ResponseEntity.noContent().build();
@@ -41,8 +42,8 @@ class ChessController {
         return ResponseEntity.ok(transformer.toStatusInfo(chessGame.getStatus()));
     }
 
-    @PostMapping("/movements")
-    ResponseEntity<PieceInfo> move(@RequestBody @Valid MovementInfo info) {
+    @PostMapping("/moves")
+    ResponseEntity<PieceInfo> move(@RequestBody @Valid MoveInfo info) {
         Point from = transformer.toPoint(info.getFrom());
         Point to = transformer.toPoint(info.getTo());
         if (Objects.isNull(from) || Objects.isNull(to)) {
@@ -66,13 +67,13 @@ class ChessController {
         List<PieceInfo> result = chessGame.notEmptySquares()
                 .stream()
                 .map(transformer::toPieceInfo)
-                .sorted(Comparator.comparing(PieceInfo::getRow).reversed().thenComparing(PieceInfo::getColumn))
+                .sorted((o1, o2) -> POINTINFO_COMPARATOR.compare(o1.getPointInfo(), o2.getPointInfo()))
                 .toList();
         return ResponseEntity.ok(result);
     }
 
     @GetMapping("/pieces/{chessPoint}")
-    ResponseEntity<PieceDetail> pieceDetail(@PathVariable String chessPoint) {
+    ResponseEntity<PieceDetailInfo> pieceDetail(@PathVariable String chessPoint) {
         Point point = transformer.toPoint(chessPoint);
         if (Objects.isNull(point)) {
             return ResponseEntity.badRequest().build();
@@ -82,7 +83,6 @@ class ChessController {
                 .map(piece -> transformer.toPieceDetail(point, piece, chessGame.allowedMoves(point)))
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
-
     }
 
 }

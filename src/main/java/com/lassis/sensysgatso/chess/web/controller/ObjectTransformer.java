@@ -4,13 +4,16 @@ import com.lassis.sensysgatso.chess.model.ChessGameStatus;
 import com.lassis.sensysgatso.chess.model.Piece;
 import com.lassis.sensysgatso.chess.model.Point;
 import com.lassis.sensysgatso.chess.model.Square;
-import com.lassis.sensysgatso.chess.web.controller.model.PieceDetail;
+import com.lassis.sensysgatso.chess.web.controller.model.PieceDetailInfo;
 import com.lassis.sensysgatso.chess.web.controller.model.PieceInfo;
+import com.lassis.sensysgatso.chess.web.controller.model.PointInfo;
 import com.lassis.sensysgatso.chess.web.controller.model.StatusInfo;
 import com.lassis.sensysgatso.chess.web.controller.model.StatusPieceInfo;
 import org.springframework.stereotype.Component;
 
 import java.util.Collection;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Set;
@@ -20,19 +23,18 @@ import static java.util.stream.Collectors.collectingAndThen;
 
 @Component
 public class ObjectTransformer {
+    public static final Comparator<PointInfo> POINTINFO_COMPARATOR = Comparator.comparing(PointInfo::row).reversed().thenComparing(PointInfo::column);
     private static final char[] CHESS_COLUMNS = new char[]{'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'};
     private static final int[] CHESS_LINES = new int[]{8, 7, 6, 5, 4, 3, 2, 1};
 
-    public PieceDetail toPieceDetail(Point point, Piece piece, Collection<Point> allowedPoints) {
+    public PieceDetailInfo toPieceDetail(Point point, Piece piece, Collection<Point> allowedPoints) {
         PieceInfo pieceInfo = toPieceInfo(piece, point);
-        Set<String> allowedMoves = allowedPoints.stream()
-                .map(this::toChessPoint)
-                .collect(Collectors.toSet());
+        List<PointInfo> allowedMoves = allowedPoints.stream()
+                .map(this::toPointInfo)
+                .sorted(POINTINFO_COMPARATOR)
+                .collect(Collectors.toList());
 
-        return PieceDetail.builder()
-                .pieceInfo(pieceInfo)
-                .points(allowedMoves)
-                .build();
+        return new PieceDetailInfo(pieceInfo, allowedMoves);
     }
 
     public PieceInfo toPieceInfo(Square square) {
@@ -44,15 +46,17 @@ public class ObjectTransformer {
     public PieceInfo toPieceInfo(Piece piece, Point point) {
         return PieceInfo.builder()
                 .color(piece.getColor())
-                .row(point.row())
-                .column(point.column())
+                .pointInfo(toPointInfo(point))
                 .type(getPieceName(piece))
-                .id(toChessPoint(point.row(), point.column()))
                 .build();
     }
 
+    public PointInfo toPointInfo(Point point){
+        return new PointInfo(toChessPoint(point), point.row(), point.column());
+    }
+
     public Point toPoint(String chessPoint) {
-        if (Objects.isNull(chessPoint) || chessPoint.length() < 2) {
+        if (Objects.isNull(chessPoint) || chessPoint.length() != 2) {
             return null;
         }
 

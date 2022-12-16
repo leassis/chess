@@ -4,7 +4,7 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
 @Data
-public class MovementInfo {
+public class MoveInfo {
     @NotBlank
     private String from;
     @NotBlank

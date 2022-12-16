@@ -1,6 +1,7 @@
 package com.lassis.sensysgatso.chess.game;
 
 import com.lassis.sensysgatso.chess.exception.EmptySquareException;
+import com.lassis.sensysgatso.chess.exception.GameOverException;
 import com.lassis.sensysgatso.chess.exception.InvalidMoveException;
 import com.lassis.sensysgatso.chess.exception.WrongPlayerException;
 import com.lassis.sensysgatso.chess.model.Board;
@@ -33,6 +34,10 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
+import static com.lassis.sensysgatso.chess.model.ChessStatus.*;
+import static com.lassis.sensysgatso.chess.model.Color.BLACK;
+import static com.lassis.sensysgatso.chess.model.Color.WHITE;
+
 /**
  * Chess game, contains the basic operations to the game and the rules to define Check or CheckMate
  */
@@ -46,7 +51,7 @@ public class ChessGame {
     private final Map<Color, ChessStatus> colorStatuses;
     private final ReentrantLock lock = new ReentrantLock();
 
-    private Color currentTurn = Color.WHITE;
+    private Color currentTurn = WHITE;
 
     public ChessGame() {
         this(new Board(SIZE_8, SIZE_8), true);
@@ -159,8 +164,8 @@ public class ChessGame {
             log.debug("showing board: \n{}", this);
 
             return ChessGameStatus.builder()
-                    .blackStatus(colorStatuses.get(Color.BLACK))
-                    .whiteStatus(colorStatuses.get(Color.WHITE))
+                    .blackStatus(colorStatuses.get(BLACK))
+                    .whiteStatus(colorStatuses.get(WHITE))
                     .turn(currentTurn)
                     .deleted(deletedPieces)
                     .build();
@@ -180,6 +185,10 @@ public class ChessGame {
     public ChessGameStatus moveTo(Point origin, Point destination) {
         lock.lock();
         try {
+            if (isGameOver()) {
+                throw new GameOverException();
+            }
+
             Optional<Piece> oPiece = board.at(origin);
             if (oPiece.isEmpty()) {
                 log.warn("there is no piece at origin position {}", origin);
@@ -206,7 +215,7 @@ public class ChessGame {
             board.remove(origin).ifPresent(p -> board.place(p, destination));
 
             // next turn
-            currentTurn = (currentTurn == Color.BLACK ? Color.WHITE : Color.BLACK);
+            currentTurn = (currentTurn == BLACK ? WHITE : BLACK);
 
             // new status
             colorStatuses.putAll(calculateStatus());
@@ -229,17 +238,17 @@ public class ChessGame {
                     .flatMap(Collection::stream)
                     .collect(Collectors.toSet());
 
-            ChessStatus chessStatus = ChessStatus.NORMAL;
+            ChessStatus chessStatus = NORMAL;
             King king = colorKings.get(color);
             if (opponentPossibleMoves.contains(king.getPoint())) {
-                chessStatus = currentTurn == king.getColor() ? ChessStatus.CHECK : ChessStatus.CHECKMATE;
+                chessStatus = currentTurn == king.getColor() ? CHECK : CHECKMATE;
 
-                if (chessStatus == ChessStatus.CHECK) {
+                if (chessStatus == CHECK) {
                     Set<Point> kingPossible = king.allowedMoves();
                     int oldSize = kingPossible.size();
                     kingPossible.retainAll(opponentPossibleMoves);
                     if (kingPossible.size() == oldSize) {
-                        chessStatus = ChessStatus.CHECKMATE;
+                        chessStatus = CHECKMATE;
                     }
                 }
             }
@@ -249,7 +258,7 @@ public class ChessGame {
     }
 
     private static Color getOtherColor(Color color) {
-        return color == Color.BLACK ? Color.WHITE : Color.BLACK;
+        return color == BLACK ? WHITE : BLACK;
     }
 
     @Override
@@ -267,8 +276,8 @@ public class ChessGame {
 
             }
             sb.append("\n\n")
-                    .append("black: ").append(colorStatuses.get(Color.BLACK))
-                    .append("\nwhite: ").append(colorStatuses.get(Color.WHITE));
+                    .append("black: ").append(colorStatuses.get(BLACK))
+                    .append("\nwhite: ").append(colorStatuses.get(WHITE));
             return sb.toString();
         } finally {
             lock.unlock();
@@ -278,5 +287,10 @@ public class ChessGame {
     private String fixSize(String value) {
         String v = ObjectUtils.isEmpty(value) ? "" : value;
         return value + " ".repeat(Math.max(0, 8 - v.length()));
+    }
+
+    private boolean isGameOver() {
+        ChessGameStatus status = getStatus();
+        return status.blackStatus() == CHECKMATE || status.whiteStatus() == CHECKMATE;
     }
 }

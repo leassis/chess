@@ -4,6 +4,7 @@ import com.lassis.sensysgatso.chess.model.Board;
 import com.lassis.sensysgatso.chess.model.Color;
 import com.lassis.sensysgatso.chess.model.Piece;
 import com.lassis.sensysgatso.chess.model.Point;
+import com.lassis.sensysgatso.chess.model.Square;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -19,10 +20,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 class PawnTest {
 
     @DisplayName("Parameterized Test")
-    @ParameterizedTest(name = "{2}")
+    @ParameterizedTest(name = "{3}")
     @ArgumentsSource(PawnArgumentProvider.class)
-    void genericTest(Piece piece, Set<Point> expected, String description) {
-        Set<Point> points = piece.allowedMoves();
+    void genericTest(Piece piece, Point point, Set<Point> expected, String description) {
+        var board = new Board(SIZE_8, SIZE_8);
+        board.place(piece, point);
+
+        Set<Point> points = piece.allowedMoves(board, point);
         assertThat(points).containsExactlyInAnyOrderElementsOf(expected);
     }
 
@@ -30,8 +34,9 @@ class PawnTest {
     void allow_diagonal_move_when_find_a_opponent() {
         Board board = new Board(SIZE_8, SIZE_8);
 
-        Pawn blackPawn = pawn(board, Color.BLACK, 3, 4);
-        Pawn whitePawn = pawn(board, Color.WHITE, 4, 5);
+        var blackPawn = pawn(board, Color.BLACK, 3, 4);
+        var whitePawn = pawn(board, Color.WHITE, 4, 5);
+
 
         Set<Point> blackMoves = blackPawn.allowedMoves();
         assertThat(blackMoves).containsExactlyInAnyOrder(at(4, 4), at(5, 4), at(4, 5));
@@ -44,8 +49,8 @@ class PawnTest {
     void do_not_allow_diagonal_move_when_is_not_an_opponent() {
         Board board = new Board(SIZE_8, SIZE_8);
 
-        Pawn blackPawn1 = pawn(board, Color.BLACK, 3, 4);
-        Pawn blackPawn2 = pawn(board, Color.BLACK, 4, 5);
+        var blackPawn1 = pawn(board, Color.BLACK, 3, 4);
+        var blackPawn2 = pawn(board, Color.BLACK, 4, 5);
 
         Set<Point> moves1 = blackPawn1.allowedMoves();
         assertThat(moves1).containsExactlyInAnyOrder(at(4, 4), at(5, 4));
@@ -58,8 +63,8 @@ class PawnTest {
     void do_not_allow_move_when_there_opponent_ahead() {
         Board board = new Board(SIZE_8, SIZE_8);
 
-        Pawn pawn1 = pawn(board, Color.BLACK, 3, 4);
-        Pawn pawn2 = pawn(board, Color.WHITE, 4, 4);
+        var pawn1 = pawn(board, Color.BLACK, 3, 4);
+        var pawn2 = pawn(board, Color.WHITE, 4, 4);
 
         Set<Point> blackMoves = pawn1.allowedMoves();
         assertThat(blackMoves).isEmpty();
@@ -72,8 +77,8 @@ class PawnTest {
     void do_not_allow_move_when_same_ahead() {
         Board board = new Board(SIZE_8, SIZE_8);
 
-        Pawn pawn1 = pawn(board, Color.BLACK, 3, 4);
-        Pawn pawn2 = pawn(board, Color.BLACK, 4, 4);
+        var pawn1 = pawn(board, Color.BLACK, 3, 4);
+        var pawn2 = pawn(board, Color.BLACK, 4, 4);
 
         Set<Point> moves1 = pawn1.allowedMoves();
         assertThat(moves1).isEmpty();
@@ -86,9 +91,9 @@ class PawnTest {
     void allow_only_diagonal_move() {
         Board board = new Board(SIZE_8, SIZE_8);
 
-        Pawn pawn1 = pawn(board, Color.BLACK, 3, 4);
-        Pawn pawn2 = pawn(board, Color.BLACK, 4, 4);
-        Pawn pawn3 = pawn(board, Color.WHITE, 4, 5);
+        var pawn1 = pawn(board, Color.BLACK, 3, 4);
+        var pawn2 = pawn(board, Color.BLACK, 4, 4);
+        var pawn3 = pawn(board, Color.WHITE, 4, 5);
 
         Set<Point> moves1 = pawn1.allowedMoves();
         assertThat(moves1).containsExactlyInAnyOrder(at(4, 5)); // diagonal
@@ -100,7 +105,7 @@ class PawnTest {
         assertThat(moves3).containsExactlyInAnyOrder(at(3, 5), at(2, 5), at(3, 4));
     }
 
-    private Pawn pawn(Board board, Color color, int row, int column) {
-        return new Pawn(color, board, at(row, column));
+    private Square pawn(Board board, Color color, int row, int column) {
+        return board.place(new Pawn(color), at(row, column));
     }
 }

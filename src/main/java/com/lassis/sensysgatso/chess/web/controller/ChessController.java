@@ -44,8 +44,8 @@ class ChessController {
 
     @PostMapping("/moves")
     ResponseEntity<PieceInfo> move(@RequestBody @Valid MoveInfo info) {
-        Point from = transformer.toPoint(info.getFrom());
-        Point to = transformer.toPoint(info.getTo());
+        Point from = transformer.toPoint(info.from());
+        Point to = transformer.toPoint(info.to());
         if (Objects.isNull(from) || Objects.isNull(to)) {
             return ResponseEntity.badRequest().build();
         }
@@ -53,7 +53,7 @@ class ChessController {
         ChessGameStatus status = chessGame.moveTo(from, to);
 
         return chessGame.at(to)
-                .map(piece -> transformer.toPieceInfo(piece, to))
+                .map(transformer::toPieceInfo)
                 .map(body -> ResponseEntity.ok()
                         .header("black", status.blackStatus().toString())
                         .header("white", status.whiteStatus().toString())
@@ -80,7 +80,7 @@ class ChessController {
         }
 
         return chessGame.at(point)
-                .map(piece -> transformer.toPieceDetail(point, piece, chessGame.allowedMoves(point)))
+                .map(square -> transformer.toPieceDetail(square, chessGame.allowedMoves(point)))
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }

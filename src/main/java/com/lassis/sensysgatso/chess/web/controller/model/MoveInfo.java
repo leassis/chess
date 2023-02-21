@@ -1,12 +1,10 @@
 package com.lassis.sensysgatso.chess.web.controller.model;
 
 import jakarta.validation.constraints.NotBlank;
-import lombok.Data;
 
-@Data
-public class MoveInfo {
-    @NotBlank
-    private String from;
-    @NotBlank
-    private String to;
-}
+public record MoveInfo(
+        @NotBlank
+        String from,
+        @NotBlank
+        String to
+) {}

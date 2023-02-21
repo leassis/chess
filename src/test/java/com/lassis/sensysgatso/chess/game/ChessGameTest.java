@@ -24,11 +24,11 @@ public class ChessGameTest {
     @Test
     void white_should_be_on_checkmate() {
         Board board = new Board(SIZE_8, SIZE_8);
-        new Rook(BLACK, board, at(3, 4)); // create and place
-        new Queen(WHITE, board, at(board.max().row(), 3));
-        new Bishop(WHITE, board, at(board.max().row(), 5));
-        new Pawn(WHITE, board, at(board.max().row() - 1, 3));
-        new Pawn(WHITE, board, at(board.max().row() - 1, 5));
+        board.place(new Rook(BLACK), at(3, 4)); // create and place
+        board.place(new Queen(WHITE), at(board.max().row(), 3));
+        board.place(new Bishop(WHITE), at(board.max().row(), 5));
+        board.place(new Pawn(WHITE), at(board.max().row() - 1, 3));
+        board.place(new Pawn(WHITE), at(board.max().row() - 1, 5));
 
         ChessGame chessGame = new ChessGame(board, false);
         ChessGameStatus status = chessGame.getStatus();
@@ -39,7 +39,7 @@ public class ChessGameTest {
     @Test
     void black_should_be_on_check_after_a_move() {
         Board board = new Board(SIZE_8, SIZE_8);
-        new Rook(WHITE, board, at(board.max().row()-3, 2)); // create and place
+        board.place(new Rook(WHITE), at(board.max().row() - 3, 2)); // create and place
 
         ChessGame chessGame = new ChessGame(board, false);
         ChessGameStatus status = chessGame.getStatus();
@@ -47,7 +47,7 @@ public class ChessGameTest {
         assertThat(status.whiteStatus()).isEqualTo(ChessStatus.NORMAL);
 
         // white
-        status = chessGame.moveTo(at(board.max().row()-3, 2), to(board.max().row()-3,4));
+        status = chessGame.moveTo(at(board.max().row() - 3, 2), to(board.max().row() - 3, 4));
         assertThat(status.blackStatus()).isEqualTo(ChessStatus.CHECK);
         assertThat(status.whiteStatus()).isEqualTo(ChessStatus.NORMAL);
     }
@@ -55,11 +55,11 @@ public class ChessGameTest {
     @Test
     void black_should_be_on_checkmate_cause_it_is_white_turn() {
         Board board = new Board(SIZE_8, SIZE_8);
-        new Pawn(WHITE, board, at(board.max().row()-4, 3));
+        board.place(new Pawn(WHITE), at(board.max().row() - 4, 3));
 
-        new Queen(BLACK, board, at(board.min().row(), 3));
-        new Bishop(BLACK, board, at(board.min().row(), 5));
-        new Pawn(BLACK, board, at(board.min().row() + 1, 5));
+        board.place(new Queen(BLACK), at(board.min().row(), 3));
+        board.place(new Bishop(BLACK), at(board.min().row(), 5));
+        board.place(new Pawn(BLACK), at(board.min().row() + 1, 5));
 
         ChessGame chessGame = new ChessGame(board, false);
         ChessGameStatus status = chessGame.getStatus();
@@ -67,32 +67,38 @@ public class ChessGameTest {
         assertThat(status.whiteStatus()).isEqualTo(ChessStatus.NORMAL);
 
         // white
-        status = chessGame.moveTo(at(board.max().row()-4, 3), to(board.max().row()-6,3));
+        status = chessGame.moveTo(at(board.max().row() - 4, 3), to(board.max().row() - 6, 3));
         assertThat(status.blackStatus()).isEqualTo(ChessStatus.CHECK);
         assertThat(status.whiteStatus()).isEqualTo(ChessStatus.NORMAL);
 
         // black (create checkmate on himself)
-        status = chessGame.moveTo(at(board.min().row(), 5), to(board.min().row()+1, 6));
+        status = chessGame.moveTo(at(board.min().row(), 5), to(board.min().row() + 1, 6));
         assertThat(status.blackStatus()).isEqualTo(ChessStatus.CHECKMATE);
         assertThat(status.whiteStatus()).isEqualTo(ChessStatus.NORMAL);
     }
 
     @Test
-    void should_not_allow_wrong_player(){
-        ChessGame chessGame = new ChessGame();
-        assertThatThrownBy(() -> chessGame.moveTo(at(1,0), to(2,0))).isInstanceOf(WrongPlayerException.class);
+    void should_not_allow_wrong_player() {
+        var chessGame = new ChessGame();
+        var from = at(1, 0);
+        var to = to(2, 0);
+        assertThatThrownBy(() -> chessGame.moveTo(from, to)).isInstanceOf(WrongPlayerException.class);
     }
 
     @Test
-    void should_throw_exception_if_try_to_move_empty_square(){
+    void should_throw_exception_if_try_to_move_empty_square() {
         ChessGame chessGame = new ChessGame();
-        assertThatThrownBy(() -> chessGame.moveTo(at(4,0), to(4,0))).isInstanceOf(EmptySquareException.class);
+        var at = at(4, 0);
+        var to = to(4, 0);
+        assertThatThrownBy(() -> chessGame.moveTo(at, to)).isInstanceOf(EmptySquareException.class);
     }
 
     @Test
-    void should_throw_exception_if_piece_is_allowed_to_move(){
+    void should_throw_exception_if_piece_is_allowed_to_move() {
         ChessGame chessGame = new ChessGame();
-        assertThatThrownBy(() -> chessGame.moveTo(at(6,0), to(4,3))).isInstanceOf(InvalidMoveException.class);
+        var at = at(6, 0);
+        var to = to(4, 3);
+        assertThatThrownBy(() -> chessGame.moveTo(at, to)).isInstanceOf(InvalidMoveException.class);
     }
 
     public static Point at(int row, int column) {

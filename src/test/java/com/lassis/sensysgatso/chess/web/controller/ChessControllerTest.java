@@ -182,7 +182,7 @@ class ChessControllerTest {
                     .content(objectMapper.writeValueAsBytes(moveInfo));
 
             mockMvc.perform(post)
-                    .andExpect(jsonPath("$.squareId", is(moveInfo.getTo())))
+                    .andExpect(jsonPath("$.squareId", is(moveInfo.to())))
                     .andExpect(status().isOk());
         }
 
@@ -204,9 +204,6 @@ class ChessControllerTest {
     }
 
     private static MoveInfo buildMove(String A7, String A6) {
-        MoveInfo moveInfo = new MoveInfo();
-        moveInfo.setFrom(A7);
-        moveInfo.setTo(A6);
-        return moveInfo;
+        return new MoveInfo(A7, A6);
     }
 }

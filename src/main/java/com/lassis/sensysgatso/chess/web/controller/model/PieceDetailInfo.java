@@ -4,5 +4,4 @@ import com.fasterxml.jackson.annotation.JsonUnwrapped;
 
 import java.util.List;
 
-public record PieceDetailInfo(@JsonUnwrapped PieceInfo pieceInfo, List<PointInfo> allowedMoves) {
-}
+public record PieceDetailInfo(@JsonUnwrapped PieceInfo pieceInfo, List<PointInfo> allowedMoves) {}

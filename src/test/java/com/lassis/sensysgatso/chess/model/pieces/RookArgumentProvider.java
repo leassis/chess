@@ -1,7 +1,5 @@
 package com.lassis.sensysgatso.chess.model.pieces;
 
-import com.lassis.sensysgatso.chess.game.ChessGame;
-import com.lassis.sensysgatso.chess.model.Board;
 import com.lassis.sensysgatso.chess.model.Color;
 import com.lassis.sensysgatso.chess.model.Point;
 import org.junit.jupiter.api.extension.ExtensionContext;
@@ -42,11 +40,10 @@ public class RookArgumentProvider implements ArgumentsProvider {
         );
         result.remove(point);
 
-        return Arguments.of(rook(point), result, description);
+        return Arguments.of(rook(), point, result, description);
     }
 
-    private Rook rook(Point point) {
-        Board board = new Board(ChessGame.SIZE_8, ChessGame.SIZE_8);
-        return new Rook(Color.BLACK, board, point);
+    private Rook rook() {
+        return new Rook(Color.BLACK);
     }
 }

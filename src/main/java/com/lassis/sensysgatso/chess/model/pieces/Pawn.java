@@ -5,7 +5,8 @@ import com.lassis.sensysgatso.chess.model.Color;
 import com.lassis.sensysgatso.chess.model.Piece;
 import com.lassis.sensysgatso.chess.model.Placement;
 import com.lassis.sensysgatso.chess.model.Point;
-import lombok.ToString;
+import com.lassis.sensysgatso.chess.model.Square;
+import lombok.Value;
 
 import java.util.HashSet;
 import java.util.Objects;
@@ -15,12 +16,9 @@ import java.util.Set;
 /**
  * Pawn chess piece. Further info on <a href="https://en.wikipedia.org/wiki/Chess">...</a>
  */
-@ToString
-public class Pawn extends AbstractChessPiece {
-
-    public Pawn(Color color, Board board, Point point) {
-        super(color, board, point);
-    }
+@Value
+public class Pawn implements Piece {
+    Color color;
 
     /**
      * provides a set of possible moves
@@ -28,11 +26,7 @@ public class Pawn extends AbstractChessPiece {
      * @return set of possible moves. Take in consideration all elements in the board
      */
     @Override
-    public Set<Point> allowedMoves() {
-        final Color color = getColor();
-        final Point point = getPoint();
-        final Board board = getBoard();
-
+    public Set<Point> allowedMoves(Board board, Point point) {
         final short sum = (short) (color.placement() == Placement.NORTH ? 1 : -1);
         final int column = point.column();
 
@@ -41,25 +35,28 @@ public class Pawn extends AbstractChessPiece {
         Set<Point> result = new HashSet<>();
         // diagonal left
         Optional<Piece> diagonalLeft = board.at(row, column - 1)
-                .filter(piece -> !Objects.equals(piece.getColor(), color));
+                                            .map(Square::piece)
+                                            .filter(piece -> !Objects.equals(piece.getColor(), color));
+
         if (diagonalLeft.isPresent()) {
             result.add(new Point(row, column - 1));
         }
 
         // diagonal right
         Optional<Piece> diagonalRight = board.at(row, column + 1)
-                .filter(piece -> !Objects.equals(piece.getColor(), color));
+                                             .map(Square::piece)
+                                             .filter(piece -> !Objects.equals(piece.getColor(), color));
         if (diagonalRight.isPresent()) {
             result.add(new Point(row, column + 1));
         }
 
         //step one
-        if (isAllowed(row, column)) {
+        if (isAllowed(row, column, board)) {
             result.add(new Point(row, column));
 
             //step two
             row += sum;
-            if (isAllowed(row, column)) {
+            if (isAllowed(row, column, board)) {
                 result.add(new Point(row, column));
             }
         }
@@ -67,8 +64,7 @@ public class Pawn extends AbstractChessPiece {
         return result;
     }
 
-    private boolean isAllowed(int row, int column) {
-        return getBoard().isInBounds(row, column)
-                && getBoard().at(row, column).isEmpty();
+    private boolean isAllowed(int row, int column, Board board) {
+        return board.isInBounds(row, column) && board.at(row, column).isEmpty();
     }
 }

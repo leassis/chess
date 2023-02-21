@@ -27,12 +27,12 @@ public class ObjectTransformer {
     private static final char[] CHESS_COLUMNS = new char[]{'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'};
     private static final int[] CHESS_LINES = new int[]{8, 7, 6, 5, 4, 3, 2, 1};
 
-    public PieceDetailInfo toPieceDetail(Point point, Piece piece, Collection<Point> allowedPoints) {
-        PieceInfo pieceInfo = toPieceInfo(piece, point);
+    public PieceDetailInfo toPieceDetail(Square square, Collection<Point> allowedPoints) {
+        PieceInfo pieceInfo = toPieceInfo(square);
         List<PointInfo> allowedMoves = allowedPoints.stream()
-                .map(this::toPointInfo)
-                .sorted(POINTINFO_COMPARATOR)
-                .collect(Collectors.toList());
+                                                    .map(this::toPointInfo)
+                                                    .sorted(POINTINFO_COMPARATOR)
+                                                    .toList();
 
         return new PieceDetailInfo(pieceInfo, allowedMoves);
     }
@@ -43,15 +43,7 @@ public class ObjectTransformer {
         return toPieceInfo(piece, point);
     }
 
-    public PieceInfo toPieceInfo(Piece piece, Point point) {
-        return PieceInfo.builder()
-                .color(piece.getColor())
-                .pointInfo(toPointInfo(point))
-                .type(piece.name())
-                .build();
-    }
-
-    public PointInfo toPointInfo(Point point){
+    public PointInfo toPointInfo(Point point) {
         return new PointInfo(toChessPoint(point), point.row(), point.column());
     }
 
@@ -77,8 +69,8 @@ public class ObjectTransformer {
 
     public StatusInfo toStatusInfo(ChessGameStatus status) {
         return status.deleted().stream()
-                .map(v -> new StatusPieceInfo(v.getColor(), v.name()))
-                .collect(collectingAndThen(Collectors.toSet(), coll -> toStatusInfo(status, coll)));
+                     .map(v -> new StatusPieceInfo(v.getColor(), v.name()))
+                     .collect(collectingAndThen(Collectors.toSet(), coll -> toStatusInfo(status, coll)));
     }
 
     private static StatusInfo toStatusInfo(ChessGameStatus status, Set<StatusPieceInfo> statuses) {
@@ -87,6 +79,14 @@ public class ObjectTransformer {
                 status.blackStatus().toString(),
                 status.turn().toString(),
                 statuses);
+    }
+
+    private PieceInfo toPieceInfo(Piece piece, Point point) {
+        return PieceInfo.builder()
+                        .color(piece.getColor())
+                        .pointInfo(toPointInfo(point))
+                        .type(piece.name())
+                        .build();
     }
 
 

@@ -24,17 +24,19 @@ import org.springframework.util.ObjectUtils;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static com.lassis.sensysgatso.chess.model.ChessStatus.*;
+import static com.lassis.sensysgatso.chess.model.ChessStatus.CHECK;
+import static com.lassis.sensysgatso.chess.model.ChessStatus.CHECKMATE;
+import static com.lassis.sensysgatso.chess.model.ChessStatus.NORMAL;
 import static com.lassis.sensysgatso.chess.model.Color.BLACK;
 import static com.lassis.sensysgatso.chess.model.Color.WHITE;
 
@@ -47,7 +49,7 @@ public class ChessGame {
 
     private final Board board;
     private final List<Piece> deletedPieces = new ArrayList<>();
-    private final Map<Color, King> colorKings;
+    private final Map<Color, Square> colorKings;
     private final Map<Color, ChessStatus> colorStatuses;
     private final ReentrantLock lock = new ReentrantLock();
 
@@ -61,37 +63,37 @@ public class ChessGame {
         this.board = board;
 
         // king is always at the same places
-        this.colorKings = Collections.unmodifiableMap(placePieceFirstRow((cl, pos) -> new King(cl, board, pos), board.min().column() + 4));
+        this.colorKings = Collections.unmodifiableMap(placePieceFirstRow(King::new, board.min().column() + 4));
         if (placePieces) {
             placePieces();
         }
         this.colorStatuses = calculateStatus();
-        log.debug("showing board: \n{}", this);
+        logBoard();
     }
 
     private void placePieces() {
-        placeAndMirrorPieceFirstRow((cl, pos) -> new Rook(cl, board, pos), board.min().column());
-        placeAndMirrorPieceFirstRow((cl, pos) -> new Knight(cl, board, pos), board.min().column() + 1);
-        placeAndMirrorPieceFirstRow((cl, pos) -> new Bishop(cl, board, pos), board.min().column() + 2);
+        placeAndMirrorPieceFirstRow(Rook::new, board.min().column());
+        placeAndMirrorPieceFirstRow(Knight::new, board.min().column() + 1);
+        placeAndMirrorPieceFirstRow(Bishop::new, board.min().column() + 2);
 
-        placePieceFirstRow((cl, pos) -> new Queen(cl, board, pos), board.min().column() + 3);
+        placePieceFirstRow(Queen::new, board.min().column() + 3);
 
         placePawns();
     }
 
-    private <T extends Piece> Map<Color, T> placePieceFirstRow(BiFunction<Color, Point, T> transform, int column) {
+    private <T extends Piece> Map<Color, Square> placePieceFirstRow(Function<Color, T> transform, int column) {
         Point max = board.max();
 
-        Map<Color, T> result = new HashMap<>();
+        Map<Color, Square> result = new EnumMap<>(Color.class);
         for (Color color : Color.values()) {
             int row = color.placement() == Placement.NORTH ? board.min().row() : max.row();
-            T piece = transform.apply(color, new Point(row, column));
+            Square piece = board.place(transform.apply(color), new Point(row, column));
             result.put(color, piece);
         }
         return result;
     }
 
-    private void placeAndMirrorPieceFirstRow(BiFunction<Color, Point, Piece> transform, int column) {
+    private <T extends Piece> void placeAndMirrorPieceFirstRow(Function<Color, T> transform, int column) {
         placePieceFirstRow(transform, column);
         placePieceFirstRow(transform, board.max().column() - column);
     }
@@ -100,7 +102,7 @@ public class ChessGame {
         for (Color color : Color.values()) {
             int row = color.placement() == Placement.NORTH ? board.min().row() + 1 : board.max().row() - 1;
             for (int col = 0; col < board.columns(); col++) {
-                new Pawn(color, board, new Point(row, col));
+                board.place(new Pawn(color), new Point(row, col));
             }
         }
     }
@@ -114,8 +116,8 @@ public class ChessGame {
         lock.lock();
         try {
             return board.nonEmptySquares().values().stream()
-                    .flatMap(Collection::stream)
-                    .collect(Collectors.toSet());
+                        .flatMap(Collection::stream)
+                        .collect(Collectors.toSet());
         } finally {
             lock.unlock();
         }
@@ -127,7 +129,7 @@ public class ChessGame {
      * @param point where the piece sit
      * @return optional with piece, optional empty if piece is not found
      */
-    public Optional<Piece> at(Point point) {
+    public Optional<Square> at(Point point) {
         lock.lock();
         try {
             return board.at(point);
@@ -145,13 +147,13 @@ public class ChessGame {
     public Set<Point> allowedMoves(Point point) {
         lock.lock();
         try {
-            Optional<Piece> at = board.at(point);
+            Optional<Square> at = board.at(point);
 
             at.ifPresent(p -> log.debug("calculating allowed moves to {}", p));
 
             return at
-                    .filter(piece -> piece.getColor() == currentTurn)
-                    .map(Piece::allowedMoves)
+                    .filter(sq -> sq.piece().getColor() == currentTurn)
+                    .map(Square::allowedMoves)
                     .orElse(Collections.emptySet());
         } finally {
             lock.unlock();
@@ -166,14 +168,14 @@ public class ChessGame {
     public ChessGameStatus getStatus() {
         lock.lock();
         try {
-            log.debug("showing board: \n{}", this);
+            logBoard();
 
             return ChessGameStatus.builder()
-                    .blackStatus(colorStatuses.get(BLACK))
-                    .whiteStatus(colorStatuses.get(WHITE))
-                    .turn(currentTurn)
-                    .deleted(deletedPieces)
-                    .build();
+                                  .blackStatus(colorStatuses.get(BLACK))
+                                  .whiteStatus(colorStatuses.get(WHITE))
+                                  .turn(currentTurn)
+                                  .deleted(deletedPieces)
+                                  .build();
         } finally {
             lock.unlock();
         }
@@ -195,23 +197,23 @@ public class ChessGame {
                 throw new GameOverException();
             }
 
-            Optional<Piece> oPiece = board.at(origin);
-            if (oPiece.isEmpty()) {
+            Optional<Square> oSquare = board.at(origin);
+            if (oSquare.isEmpty()) {
                 log.warn("there is no piece at origin position {}", origin);
                 throw new EmptySquareException();
             }
-            oPiece.ifPresent(p -> log.debug("moving {} from {} -> {}", p, origin, destination));
+            oSquare.ifPresent(p -> log.debug("moving {} from {} -> {}", p, origin, destination));
 
-            boolean wrongPlayer = oPiece.map(Piece::getColor).filter(c -> Objects.equals(c, currentTurn)).isEmpty();
+            boolean wrongPlayer = oSquare.map(Square::piece).map(Piece::getColor).filter(c -> Objects.equals(c, currentTurn)).isEmpty();
             if (wrongPlayer) {
                 log.warn("it is {} turn", currentTurn);
                 throw new WrongPlayerException();
             }
 
-            Set<Point> points = oPiece.map(Piece::allowedMoves)
-                    .orElse(Collections.emptySet());
+            Set<Point> points = oSquare.map(Square::allowedMoves)
+                                       .orElse(Collections.emptySet());
             if (!points.contains(destination)) {
-                log.warn("piece {} is not allowed to move to {}", oPiece.get(), points);
+                log.warn("piece {} is not allowed to move to {}", oSquare.get(), points);
                 throw new InvalidMoveException();
             }
 
@@ -227,7 +229,7 @@ public class ChessGame {
             // new status
             colorStatuses.putAll(calculateStatus());
 
-            log.debug("showing board: \n{}", this);
+            logBoard();
             return getStatus();
         } finally {
             lock.unlock();
@@ -235,20 +237,19 @@ public class ChessGame {
     }
 
     private Map<Color, ChessStatus> calculateStatus() {
-        Map<Color, ChessStatus> result = new HashMap<>();
+        Map<Color, ChessStatus> result = new EnumMap<>(Color.class);
         Map<Color, Set<Square>> pieces = board.nonEmptySquares();
         for (Color color : Color.values()) {
             Color other = getOtherColor(color);
             Set<Point> opponentPossibleMoves = pieces.getOrDefault(other, Collections.emptySet()).stream()
-                    .map(Square::piece)
-                    .map(Piece::allowedMoves)
-                    .flatMap(Collection::stream)
-                    .collect(Collectors.toSet());
+                                                     .map(Square::allowedMoves)
+                                                     .flatMap(Collection::stream)
+                                                     .collect(Collectors.toSet());
 
             ChessStatus chessStatus = NORMAL;
-            King king = colorKings.get(color);
-            if (opponentPossibleMoves.contains(king.getPoint())) {
-                chessStatus = currentTurn == king.getColor() ? CHECK : CHECKMATE;
+            Square king = colorKings.get(color);
+            if (opponentPossibleMoves.contains(king.point())) {
+                chessStatus = currentTurn == king.piece().getColor() ? CHECK : CHECKMATE;
 
                 if (chessStatus == CHECK) {
                     Set<Point> kingPossible = king.allowedMoves();
@@ -276,15 +277,15 @@ public class ChessGame {
             for (int row = board.min().row(); row <= board.max().row(); row++) {
                 List<String> line = new ArrayList<>();
                 for (int col = board.min().column(); col <= board.max().column(); col++) {
-                    line.add(fixSize(board.at(row, col).map(v -> v.getColor().toString().charAt(0) + ":" + v.name()).orElse("")));
+                    line.add(fixSize(board.at(row, col).map(Square::piece).map(v -> v.getColor().toString().charAt(0) + ":" + v.name()).orElse("")));
                 }
                 sb.append(line.stream().collect(Collectors.joining("|", "|", "|")));
                 sb.append("\n");
 
             }
             sb.append("\n\n")
-                    .append("black: ").append(colorStatuses.get(BLACK))
-                    .append("\nwhite: ").append(colorStatuses.get(WHITE));
+              .append("black: ").append(colorStatuses.get(BLACK))
+              .append("\nwhite: ").append(colorStatuses.get(WHITE));
             return sb.toString();
         } finally {
             lock.unlock();
@@ -299,5 +300,9 @@ public class ChessGame {
     private boolean isGameOver() {
         ChessGameStatus status = getStatus();
         return status.blackStatus() == CHECKMATE || status.whiteStatus() == CHECKMATE;
+    }
+
+    private void logBoard() {
+        log.debug("showing board: \n{}", this);
     }
 }

@@ -9,7 +9,7 @@ import lombok.Value;
 @Builder
 public class PieceInfo {
     @JsonUnwrapped
-    private final PointInfo pointInfo;
-    private final Color color;
-    private final String type;
+    PointInfo pointInfo;
+    Color color;
+    String type;
 }

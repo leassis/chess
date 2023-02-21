@@ -1,5 +1,6 @@
 package com.lassis.sensysgatso.chess.model;
 
+import java.util.Locale;
 import java.util.Set;
 
 /**
@@ -18,14 +19,9 @@ public interface Piece {
      *
      * @return set points
      */
-    Set<Point> allowedMoves();
+    Set<Point> allowedMoves(Board board, Point point);
 
-    /**
-     * set a point to a piece
-     *
-     * @param point where the piece is sit
-     */
-    void at(Point point);
-
-    String name();
+    default String name() {
+        return this.getClass().getSimpleName().toUpperCase(Locale.ROOT);
+    }
 }

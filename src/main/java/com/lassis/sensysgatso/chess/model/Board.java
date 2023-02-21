@@ -1,6 +1,6 @@
 package com.lassis.sensysgatso.chess.model;
 
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
@@ -23,13 +23,13 @@ public class Board {
     }
 
     public Map<Color, Set<Square>> nonEmptySquares() {
-        Map<Color, Set<Square>> result = new HashMap<>();
+        Map<Color, Set<Square>> result = new EnumMap<>(Color.class);
         for (int row = 0; row < pieces.length; row++) {
             for (int column = 0; column < pieces[row].length; column++) {
                 Piece piece = pieces[row][column];
                 if (Objects.nonNull(piece)) {
                     result.computeIfAbsent(piece.getColor(), k -> new HashSet<>())
-                            .add(new Square(piece, new Point(row, column)));
+                          .add(new Square(this, piece, new Point(row, column)));
                 }
             }
         }
@@ -42,19 +42,20 @@ public class Board {
      * @param point coordinate to check
      * @return an Optional piece if found, empty otherwise
      */
-    public Optional<Piece> at(Point point) {
+    public Optional<Square> at(Point point) {
         return at(point.row(), point.column());
     }
 
-    public Optional<Piece> at(int row, int column) {
+    public Optional<Square> at(int row, int column) {
         if (!isInBounds(row, column)) {
             return Optional.empty();
         }
 
-        return Optional.ofNullable(pieces[row][column]);
+        return Optional.ofNullable(pieces[row][column])
+                       .map(piece -> new Square(this, piece, new Point(row, column)));
     }
 
-    public void place(Piece piece, Point point) {
+    public Square place(Piece piece, Point point) {
         if (!isInBounds(point)) {
             throw new IllegalStateException("invalid position");
         }
@@ -63,16 +64,13 @@ public class Board {
             throw new IllegalStateException("position is not empty");
         }
 
-        piece.at(point);
-
         pieces[point.row()][point.column()] = piece;
+        return new Square(this, piece, point);
     }
 
     public Optional<Piece> remove(Point point) {
-        Optional<Piece> deleted = at(point);
+        Optional<Piece> deleted = at(point).map(Square::piece);
         pieces[point.row()][point.column()] = null;
-
-        deleted.ifPresent(p -> p.at(null));
 
         return deleted;
     }
@@ -103,4 +101,3 @@ public class Board {
     }
 
 }
-

@@ -2,8 +2,8 @@ package com.lassis.sensysgatso.chess.model.pieces;
 
 import com.lassis.sensysgatso.chess.model.Board;
 import com.lassis.sensysgatso.chess.model.Piece;
+import com.lassis.sensysgatso.chess.model.PieceInfo;
 import com.lassis.sensysgatso.chess.model.Point;
-import com.lassis.sensysgatso.chess.model.Square;
 import lombok.experimental.UtilityClass;
 
 import java.util.HashSet;
@@ -84,7 +84,7 @@ class CommonMovements {
 
     private boolean processSquare(Piece piece, Point point, Board board, Set<Point> points, int row, int column) {
 
-        Optional<Piece> pieceFound = board.at(row, column).map(Square::piece);
+        Optional<Piece> pieceFound = board.at(row, column).map(PieceInfo::piece);
         // found piece in the way
         if (pieceFound.isPresent()) {
             if (!isSameColor(piece, pieceFound.get())) {

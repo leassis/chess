@@ -3,9 +3,9 @@ package com.lassis.sensysgatso.chess.model.pieces;
 import com.lassis.sensysgatso.chess.model.Board;
 import com.lassis.sensysgatso.chess.model.Color;
 import com.lassis.sensysgatso.chess.model.Piece;
+import com.lassis.sensysgatso.chess.model.PieceInfo;
 import com.lassis.sensysgatso.chess.model.Placement;
 import com.lassis.sensysgatso.chess.model.Point;
-import com.lassis.sensysgatso.chess.model.Square;
 import lombok.Value;
 
 import java.util.HashSet;
@@ -35,7 +35,7 @@ public class Pawn implements Piece {
         Set<Point> result = new HashSet<>();
         // diagonal left
         Optional<Piece> diagonalLeft = board.at(row, column - 1)
-                                            .map(Square::piece)
+                                            .map(PieceInfo::piece)
                                             .filter(piece -> !Objects.equals(piece.getColor(), color));
 
         if (diagonalLeft.isPresent()) {
@@ -44,7 +44,7 @@ public class Pawn implements Piece {
 
         // diagonal right
         Optional<Piece> diagonalRight = board.at(row, column + 1)
-                                             .map(Square::piece)
+                                             .map(PieceInfo::piece)
                                              .filter(piece -> !Objects.equals(piece.getColor(), color));
         if (diagonalRight.isPresent()) {
             result.add(new Point(row, column + 1));

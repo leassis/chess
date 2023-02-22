@@ -22,14 +22,14 @@ public class Board {
         this.maxPoint = new Point(rows - 1, columns - 1);
     }
 
-    public Map<Color, Set<Square>> nonEmptySquares() {
-        Map<Color, Set<Square>> result = new EnumMap<>(Color.class);
+    public Map<Color, Set<PieceInfo>> nonEmptySquares() {
+        Map<Color, Set<PieceInfo>> result = new EnumMap<>(Color.class);
         for (int row = 0; row < pieces.length; row++) {
             for (int column = 0; column < pieces[row].length; column++) {
                 Piece piece = pieces[row][column];
                 if (Objects.nonNull(piece)) {
                     result.computeIfAbsent(piece.getColor(), k -> new HashSet<>())
-                          .add(new Square(this, piece, new Point(row, column)));
+                          .add(new PieceInfo(this, piece, new Point(row, column)));
                 }
             }
         }
@@ -42,20 +42,20 @@ public class Board {
      * @param point coordinate to check
      * @return an Optional piece if found, empty otherwise
      */
-    public Optional<Square> at(Point point) {
+    public Optional<PieceInfo> at(Point point) {
         return at(point.row(), point.column());
     }
 
-    public Optional<Square> at(int row, int column) {
+    public Optional<PieceInfo> at(int row, int column) {
         if (!isInBounds(row, column)) {
             return Optional.empty();
         }
 
         return Optional.ofNullable(pieces[row][column])
-                       .map(piece -> new Square(this, piece, new Point(row, column)));
+                       .map(piece -> new PieceInfo(this, piece, new Point(row, column)));
     }
 
-    public Square place(Piece piece, Point point) {
+    public PieceInfo place(Piece piece, Point point) {
         if (!isInBounds(point)) {
             throw new IllegalStateException("invalid position");
         }
@@ -65,11 +65,11 @@ public class Board {
         }
 
         pieces[point.row()][point.column()] = piece;
-        return new Square(this, piece, point);
+        return new PieceInfo(this, piece, point);
     }
 
     public Optional<Piece> remove(Point point) {
-        Optional<Piece> deleted = at(point).map(Square::piece);
+        Optional<Piece> deleted = at(point).map(PieceInfo::piece);
         pieces[point.row()][point.column()] = null;
 
         return deleted;

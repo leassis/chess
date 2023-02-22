@@ -2,8 +2,8 @@ package com.lassis.sensysgatso.chess.web.controller;
 
 import com.lassis.sensysgatso.chess.model.ChessGameStatus;
 import com.lassis.sensysgatso.chess.model.Piece;
+import com.lassis.sensysgatso.chess.model.PieceInfo;
 import com.lassis.sensysgatso.chess.model.Point;
-import com.lassis.sensysgatso.chess.model.Square;
 import com.lassis.sensysgatso.chess.web.controller.model.PieceDTO;
 import com.lassis.sensysgatso.chess.web.controller.model.PieceDetailDTO;
 import com.lassis.sensysgatso.chess.web.controller.model.PointDTO;
@@ -27,7 +27,7 @@ public class ObjectTransformer {
     private static final char[] CHESS_COLUMNS = new char[]{'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'};
     private static final int[] CHESS_LINES = new int[]{8, 7, 6, 5, 4, 3, 2, 1};
 
-    public PieceDetailDTO toPieceDetail(Square square, Collection<Point> allowedPoints) {
+    public PieceDetailDTO toPieceDetail(PieceInfo square, Collection<Point> allowedPoints) {
         PieceDTO pieceInfo = toPieceInfo(square);
         List<PointDTO> allowedMoves = allowedPoints.stream()
                                                    .map(this::toPointInfo)
@@ -37,7 +37,7 @@ public class ObjectTransformer {
         return new PieceDetailDTO(pieceInfo, allowedMoves);
     }
 
-    public PieceDTO toPieceInfo(Square square) {
+    public PieceDTO toPieceInfo(PieceInfo square) {
         Point point = square.point();
         Piece piece = square.piece();
         return toPieceInfo(piece, point);

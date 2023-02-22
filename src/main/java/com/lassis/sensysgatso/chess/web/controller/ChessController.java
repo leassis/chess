@@ -3,10 +3,10 @@ package com.lassis.sensysgatso.chess.web.controller;
 import com.lassis.sensysgatso.chess.game.ChessGame;
 import com.lassis.sensysgatso.chess.model.ChessGameStatus;
 import com.lassis.sensysgatso.chess.model.Point;
-import com.lassis.sensysgatso.chess.web.controller.model.MoveInfo;
-import com.lassis.sensysgatso.chess.web.controller.model.PieceDetailInfo;
-import com.lassis.sensysgatso.chess.web.controller.model.PieceInfo;
-import com.lassis.sensysgatso.chess.web.controller.model.StatusInfo;
+import com.lassis.sensysgatso.chess.web.controller.model.MoveDTO;
+import com.lassis.sensysgatso.chess.web.controller.model.PieceDTO;
+import com.lassis.sensysgatso.chess.web.controller.model.PieceDetailDTO;
+import com.lassis.sensysgatso.chess.web.controller.model.StatusDTO;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -38,12 +38,12 @@ class ChessController {
     }
 
     @GetMapping("/status")
-    ResponseEntity<StatusInfo> status() {
+    ResponseEntity<StatusDTO> status() {
         return ResponseEntity.ok(transformer.toStatusInfo(chessGame.getStatus()));
     }
 
     @PostMapping("/moves")
-    ResponseEntity<PieceInfo> move(@RequestBody @Valid MoveInfo info) {
+    ResponseEntity<PieceDTO> move(@RequestBody @Valid MoveDTO info) {
         Point from = transformer.toPoint(info.from());
         Point to = transformer.toPoint(info.to());
         if (Objects.isNull(from) || Objects.isNull(to)) {
@@ -63,17 +63,17 @@ class ChessController {
     }
 
     @GetMapping("/pieces")
-    ResponseEntity<List<PieceInfo>> allPieces() {
-        List<PieceInfo> result = chessGame.notEmptySquares()
-                .stream()
-                .map(transformer::toPieceInfo)
-                .sorted((o1, o2) -> POINTINFO_COMPARATOR.compare(o1.getPointInfo(), o2.getPointInfo()))
-                .toList();
+    ResponseEntity<List<PieceDTO>> allPieces() {
+        List<PieceDTO> result = chessGame.notEmptySquares()
+                                         .stream()
+                                         .map(transformer::toPieceInfo)
+                                         .sorted((o1, o2) -> POINTINFO_COMPARATOR.compare(o1.getPointInfo(), o2.getPointInfo()))
+                                         .toList();
         return ResponseEntity.ok(result);
     }
 
     @GetMapping("/pieces/{chessPoint}")
-    ResponseEntity<PieceDetailInfo> pieceDetail(@PathVariable String chessPoint) {
+    ResponseEntity<PieceDetailDTO> pieceDetail(@PathVariable String chessPoint) {
         Point point = transformer.toPoint(chessPoint);
         if (Objects.isNull(point)) {
             return ResponseEntity.badRequest().build();

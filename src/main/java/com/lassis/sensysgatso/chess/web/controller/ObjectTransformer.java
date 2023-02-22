@@ -4,11 +4,11 @@ import com.lassis.sensysgatso.chess.model.ChessGameStatus;
 import com.lassis.sensysgatso.chess.model.Piece;
 import com.lassis.sensysgatso.chess.model.Point;
 import com.lassis.sensysgatso.chess.model.Square;
-import com.lassis.sensysgatso.chess.web.controller.model.PieceDetailInfo;
-import com.lassis.sensysgatso.chess.web.controller.model.PieceInfo;
-import com.lassis.sensysgatso.chess.web.controller.model.PointInfo;
-import com.lassis.sensysgatso.chess.web.controller.model.StatusInfo;
-import com.lassis.sensysgatso.chess.web.controller.model.StatusPieceInfo;
+import com.lassis.sensysgatso.chess.web.controller.model.PieceDTO;
+import com.lassis.sensysgatso.chess.web.controller.model.PieceDetailDTO;
+import com.lassis.sensysgatso.chess.web.controller.model.PointDTO;
+import com.lassis.sensysgatso.chess.web.controller.model.StatusDTO;
+import com.lassis.sensysgatso.chess.web.controller.model.StatusPieceDTO;
 import org.springframework.stereotype.Component;
 
 import java.util.Collection;
@@ -23,28 +23,28 @@ import static java.util.stream.Collectors.collectingAndThen;
 
 @Component
 public class ObjectTransformer {
-    public static final Comparator<PointInfo> POINTINFO_COMPARATOR = Comparator.comparing(PointInfo::row).reversed().thenComparing(PointInfo::column);
+    public static final Comparator<PointDTO> POINTINFO_COMPARATOR = Comparator.comparing(PointDTO::row).reversed().thenComparing(PointDTO::column);
     private static final char[] CHESS_COLUMNS = new char[]{'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'};
     private static final int[] CHESS_LINES = new int[]{8, 7, 6, 5, 4, 3, 2, 1};
 
-    public PieceDetailInfo toPieceDetail(Square square, Collection<Point> allowedPoints) {
-        PieceInfo pieceInfo = toPieceInfo(square);
-        List<PointInfo> allowedMoves = allowedPoints.stream()
-                                                    .map(this::toPointInfo)
-                                                    .sorted(POINTINFO_COMPARATOR)
-                                                    .toList();
+    public PieceDetailDTO toPieceDetail(Square square, Collection<Point> allowedPoints) {
+        PieceDTO pieceInfo = toPieceInfo(square);
+        List<PointDTO> allowedMoves = allowedPoints.stream()
+                                                   .map(this::toPointInfo)
+                                                   .sorted(POINTINFO_COMPARATOR)
+                                                   .toList();
 
-        return new PieceDetailInfo(pieceInfo, allowedMoves);
+        return new PieceDetailDTO(pieceInfo, allowedMoves);
     }
 
-    public PieceInfo toPieceInfo(Square square) {
+    public PieceDTO toPieceInfo(Square square) {
         Point point = square.point();
         Piece piece = square.piece();
         return toPieceInfo(piece, point);
     }
 
-    public PointInfo toPointInfo(Point point) {
-        return new PointInfo(toChessPoint(point), point.row(), point.column());
+    public PointDTO toPointInfo(Point point) {
+        return new PointDTO(toChessPoint(point), point.row(), point.column());
     }
 
     public Point toPoint(String chessPoint) {
@@ -67,26 +67,26 @@ public class ObjectTransformer {
         return toChessPoint(point.row(), point.column());
     }
 
-    public StatusInfo toStatusInfo(ChessGameStatus status) {
+    public StatusDTO toStatusInfo(ChessGameStatus status) {
         return status.deleted().stream()
-                     .map(v -> new StatusPieceInfo(v.getColor(), v.name()))
+                     .map(v -> new StatusPieceDTO(v.getColor(), v.name()))
                      .collect(collectingAndThen(Collectors.toSet(), coll -> toStatusInfo(status, coll)));
     }
 
-    private static StatusInfo toStatusInfo(ChessGameStatus status, Set<StatusPieceInfo> statuses) {
-        return new StatusInfo(
+    private static StatusDTO toStatusInfo(ChessGameStatus status, Set<StatusPieceDTO> statuses) {
+        return new StatusDTO(
                 status.whiteStatus().toString(),
                 status.blackStatus().toString(),
                 status.turn().toString(),
                 statuses);
     }
 
-    private PieceInfo toPieceInfo(Piece piece, Point point) {
-        return PieceInfo.builder()
-                        .color(piece.getColor())
-                        .pointInfo(toPointInfo(point))
-                        .type(piece.name())
-                        .build();
+    private PieceDTO toPieceInfo(Piece piece, Point point) {
+        return PieceDTO.builder()
+                       .color(piece.getColor())
+                       .pointInfo(toPointInfo(point))
+                       .type(piece.name())
+                       .build();
     }
 
 

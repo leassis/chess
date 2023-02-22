@@ -3,7 +3,7 @@ package com.lassis.sensysgatso.chess.web.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lassis.sensysgatso.chess.model.ChessStatus;
 import com.lassis.sensysgatso.chess.model.Color;
-import com.lassis.sensysgatso.chess.web.controller.model.MoveInfo;
+import com.lassis.sensysgatso.chess.web.controller.model.MoveDTO;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -108,12 +108,12 @@ class ChessControllerTest {
 
     @Test
     void should_be_move_piece() throws Exception {
-        MoveInfo moveInfo = buildMove("A2", "A4");
+        MoveDTO moveDTO = buildMove("A2", "A4");
 
         MockHttpServletRequestBuilder post = MockMvcRequestBuilders.post("/api/moves")
                 .accept(MediaType.APPLICATION_JSON_VALUE)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsBytes(moveInfo));
+                .content(objectMapper.writeValueAsBytes(moveDTO));
 
         mockMvc.perform(post)
                 .andExpect(jsonPath("$.squareId", is("A4")))
@@ -126,12 +126,12 @@ class ChessControllerTest {
 
     @Test
     void should_be_404_move_empty_square() throws Exception {
-        MoveInfo moveInfo = buildMove("D5", "D7");
+        MoveDTO moveDTO = buildMove("D5", "D7");
 
         MockHttpServletRequestBuilder post = MockMvcRequestBuilders.post("/api/moves")
                 .accept(MediaType.APPLICATION_JSON_VALUE)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsBytes(moveInfo));
+                .content(objectMapper.writeValueAsBytes(moveDTO));
 
         mockMvc.perform(post)
                 .andExpect(status().isNotFound());
@@ -139,12 +139,12 @@ class ChessControllerTest {
 
     @Test
     void should_be_400_invalid_move() throws Exception {
-        MoveInfo moveInfo = buildMove("A1", "B2");
+        MoveDTO moveDTO = buildMove("A1", "B2");
 
         MockHttpServletRequestBuilder post = MockMvcRequestBuilders.post("/api/moves")
                 .accept(MediaType.APPLICATION_JSON_VALUE)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsBytes(moveInfo));
+                .content(objectMapper.writeValueAsBytes(moveDTO));
 
         mockMvc.perform(post)
                 .andExpect(status().isBadRequest());
@@ -152,12 +152,12 @@ class ChessControllerTest {
 
     @Test
     void should_be_409_black_trying_to_move_on_white_turn() throws Exception {
-        MoveInfo moveInfo = buildMove("A7", "A6");
+        MoveDTO moveDTO = buildMove("A7", "A6");
 
         MockHttpServletRequestBuilder post = MockMvcRequestBuilders.post("/api/moves")
                 .accept(MediaType.APPLICATION_JSON_VALUE)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsBytes(moveInfo));
+                .content(objectMapper.writeValueAsBytes(moveDTO));
 
         mockMvc.perform(post)
                 .andExpect(status().isConflict());
@@ -165,7 +165,7 @@ class ChessControllerTest {
 
     @Test
     void should_delete_black_pawn() throws Exception {
-        List<MoveInfo> moves = Arrays.asList(
+        List<MoveDTO> moves = Arrays.asList(
                 buildMove("A2", "A4"),
                 buildMove("A7", "A6"),
                 buildMove("A1", "A3"),
@@ -175,14 +175,14 @@ class ChessControllerTest {
                 buildMove("D3", "D7")
         );
 
-        for (MoveInfo moveInfo : moves) {
+        for (MoveDTO moveDTO : moves) {
             MockHttpServletRequestBuilder post = MockMvcRequestBuilders.post("/api/moves")
                     .accept(MediaType.APPLICATION_JSON_VALUE)
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content(objectMapper.writeValueAsBytes(moveInfo));
+                    .content(objectMapper.writeValueAsBytes(moveDTO));
 
             mockMvc.perform(post)
-                    .andExpect(jsonPath("$.squareId", is(moveInfo.to())))
+                    .andExpect(jsonPath("$.squareId", is(moveDTO.to())))
                     .andExpect(status().isOk());
         }
 
@@ -203,7 +203,7 @@ class ChessControllerTest {
 
     }
 
-    private static MoveInfo buildMove(String A7, String A6) {
-        return new MoveInfo(A7, A6);
+    private static MoveDTO buildMove(String A7, String A6) {
+        return new MoveDTO(A7, A6);
     }
 }

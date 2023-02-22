@@ -7,9 +7,9 @@ import lombok.Value;
 
 @Value
 @Builder
-public class PieceInfo {
+public class PieceDTO {
     @JsonUnwrapped
-    PointInfo pointInfo;
+    PointDTO pointInfo;
     Color color;
     String type;
 }

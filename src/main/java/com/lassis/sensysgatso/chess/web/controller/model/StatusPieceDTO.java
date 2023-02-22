@@ -2,4 +2,4 @@ package com.lassis.sensysgatso.chess.web.controller.model;
 
 import com.lassis.sensysgatso.chess.model.Color;
 
-public record StatusPieceInfo(Color color, String type) {}
+public record StatusPieceDTO(Color color, String type) {}

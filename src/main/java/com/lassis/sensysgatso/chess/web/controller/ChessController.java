@@ -53,13 +53,14 @@ class ChessController {
         ChessGameStatus status = chessGame.moveTo(from, to);
 
         return chessGame.at(to)
-                .map(transformer::toPieceInfo)
-                .map(body -> ResponseEntity.ok()
-                        .header("black", status.blackStatus().toString())
-                        .header("white", status.whiteStatus().toString())
-                        .header("turn", status.turn().toString())
-                        .body(body))
-                .orElseGet(() -> ResponseEntity.notFound().build());
+                        .filter(v -> v.piece().isPresent())
+                        .map(transformer::toPieceInfo)
+                        .map(body -> ResponseEntity.ok()
+                                                   .header("black", status.blackStatus().toString())
+                                                   .header("white", status.whiteStatus().toString())
+                                                   .header("turn", status.turn().toString())
+                                                   .body(body))
+                        .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @GetMapping("/pieces")
@@ -67,7 +68,7 @@ class ChessController {
         List<PieceDTO> result = chessGame.notEmptySquares()
                                          .stream()
                                          .map(transformer::toPieceInfo)
-                                         .sorted((o1, o2) -> POINTINFO_COMPARATOR.compare(o1.getPointInfo(), o2.getPointInfo()))
+                                         .sorted((o1, o2) -> POINTINFO_COMPARATOR.compare(o1.pointInfo(), o2.pointInfo()))
                                          .toList();
         return ResponseEntity.ok(result);
     }
@@ -80,9 +81,10 @@ class ChessController {
         }
 
         return chessGame.at(point)
-                .map(square -> transformer.toPieceDetail(square, chessGame.allowedMoves(point)))
-                .map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
+                        .filter(v -> v.piece().isPresent())
+                        .map(square -> transformer.toPieceDetail(square, chessGame.allowedMoves(point)))
+                        .map(ResponseEntity::ok)
+                        .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
 }

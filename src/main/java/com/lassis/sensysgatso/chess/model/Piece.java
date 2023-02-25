@@ -12,7 +12,7 @@ public interface Piece {
      *
      * @return enum {@link Color}
      */
-    Color getColor();
+    Color color();
 
     /**
      * return all possible movements
@@ -24,4 +24,5 @@ public interface Piece {
     default String name() {
         return this.getClass().getSimpleName().toUpperCase(Locale.ROOT);
     }
+
 }

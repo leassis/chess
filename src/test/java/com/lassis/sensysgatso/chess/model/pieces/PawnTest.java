@@ -3,8 +3,8 @@ package com.lassis.sensysgatso.chess.model.pieces;
 import com.lassis.sensysgatso.chess.model.Board;
 import com.lassis.sensysgatso.chess.model.Color;
 import com.lassis.sensysgatso.chess.model.Piece;
-import com.lassis.sensysgatso.chess.model.PieceInfo;
 import com.lassis.sensysgatso.chess.model.Point;
+import com.lassis.sensysgatso.chess.model.Square;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -105,7 +105,7 @@ class PawnTest {
         assertThat(moves3).containsExactlyInAnyOrder(at(3, 5), at(2, 5), at(3, 4));
     }
 
-    private PieceInfo pawn(Board board, Color color, int row, int column) {
+    private Square pawn(Board board, Color color, int row, int column) {
         return board.place(new Pawn(color), at(row, column));
     }
 }

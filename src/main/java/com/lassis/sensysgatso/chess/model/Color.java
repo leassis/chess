@@ -9,7 +9,7 @@ import static com.lassis.sensysgatso.chess.model.Placement.SOUTH;
 public enum Color {
     BLACK(NORTH), WHITE(SOUTH);
 
-    private final Placement placement;
+    final Placement placement;
 
     public Placement placement() {
         return placement;

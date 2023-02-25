@@ -4,7 +4,6 @@ import com.lassis.sensysgatso.chess.model.Board;
 import com.lassis.sensysgatso.chess.model.Color;
 import com.lassis.sensysgatso.chess.model.Piece;
 import com.lassis.sensysgatso.chess.model.Point;
-import lombok.Value;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -12,10 +11,7 @@ import java.util.Set;
 /**
  * Queen chess piece. Executes movements straight or diagonal. Further info on <a href="https://en.wikipedia.org/wiki/Chess">...</a>
  */
-@Value
-public class Queen implements Piece {
-    Color color;
-
+public record Queen(Color color) implements Piece {
     /**
      * provides a set of possible moves
      *

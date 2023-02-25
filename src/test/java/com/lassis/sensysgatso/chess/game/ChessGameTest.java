@@ -39,7 +39,9 @@ public class ChessGameTest {
     @Test
     void black_should_be_on_check_after_a_move() {
         Board board = new Board(SIZE_8, SIZE_8);
-        board.place(new Rook(WHITE), at(board.max().row() - 3, 2)); // create and place
+
+        Point rookPoint = at(board.max().row() - 3, 2);
+        board.place(new Rook(WHITE), rookPoint); // create and place
 
         ChessGame chessGame = new ChessGame(board, false);
         ChessGameStatus status = chessGame.getStatus();
@@ -47,7 +49,7 @@ public class ChessGameTest {
         assertThat(status.whiteStatus()).isEqualTo(ChessStatus.NORMAL);
 
         // white
-        status = chessGame.moveTo(at(board.max().row() - 3, 2), to(board.max().row() - 3, 4));
+        status = chessGame.moveTo(rookPoint, to(board.max().row() - 3, 4));
         assertThat(status.blackStatus()).isEqualTo(ChessStatus.CHECK);
         assertThat(status.whiteStatus()).isEqualTo(ChessStatus.NORMAL);
     }
